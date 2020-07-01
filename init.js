@@ -8,6 +8,11 @@ module.exports = async function () {
           name: "register users",
           location: 'users.registerUsers'
       },
+      confirmPassword: {
+          type: 5003,
+          name: "confirm password",
+          location: 'users.confirmPassword'
+      },
       belShare: {
           type: 5002,
           name: "belShare",

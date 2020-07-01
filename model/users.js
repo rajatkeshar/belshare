@@ -19,7 +19,6 @@ module.exports = {
         name: 'email',
         type: 'String',
         length: 256,
-        not_null: true,
         index: true
       },
       {
@@ -48,8 +47,9 @@ module.exports = {
         default: true
       },
       {
-        name: 'otp',
-        type: 'Number'
+        name: 'token',
+        type: 'String',
+        length: 256
       },
       {
         name: 'hash',

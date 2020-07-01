@@ -18,6 +18,7 @@ module.exports = {
     outTransfer: 0.001,
     registerResult: 0.001,
     registerUsers: 0,
-    belShare: 0
+    belShare: 0,
+    updateUser: 0
   }
 }

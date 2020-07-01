@@ -1,5 +1,5 @@
 module.exports = {
-    name: 'bel_shares',
+    name: 'belshares',
     fields: [
       {
         name: 'userId',

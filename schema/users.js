@@ -31,6 +31,6 @@ module.exports = {
           maxLength: 2
         }
       },
-      required: ['phoneNo', 'email', 'password', 'role', 'countryCode']
+      required: ['phoneNo', 'password', 'role', 'countryCode']
   }
 };

@@ -53,12 +53,12 @@ app.route.put('/belshare',  async function (req) {
 app.route.post('/belshare/user/:userId',  async function (req) {
     let offset =  req.query.offset || 0;
     let limit = req.query.limit || 20;
-    console.log(app.model);
-    let belShare = await app.model.Belshare.findAll({
-        // condition: { userId: req.params.userId },
-        // offset: offset,
-        // limit: limit
+    let count = await app.model.BelShare.count({ userId: req.params.userId });
+    let belShare = await app.model.BelShare.findAll({
+        condition: { userId: req.params.userId },
+        offset: offset,
+        limit: limit
     });
 
-    return belShare;
+    return {data: belShare, total: count, success: true};
 });
