@@ -1,7 +1,7 @@
 var constants = require('../utils/constants.js');
 module.exports = {
   belShare: async function(userId, merchantId, desc, countryCode) {
-    console.log("calling contract registerResults: ", this);
+    console.log("calling contract belShare: ", this);
     app.sdb.lock('belShare.belShare@' + userId);
     app.sdb.create('Belshare', {
       userId: userId,
@@ -12,5 +12,10 @@ module.exports = {
       transactionId: this.trs.id,
       senderId: this.trs.senderId + constants.admin.countryCode
     });
+  },
+  verifyBelShare: async function(transactionId) {
+    console.log("calling contract verify belShare: ", this);
+    app.sdb.lock('belShare.verifyBelShare@' + transactionId);
+    app.sdb.update('Belshare', { status: "verified" }, { transactionId: transactionId });
   }
 }

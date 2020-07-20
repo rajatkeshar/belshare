@@ -17,6 +17,11 @@ module.exports = async function () {
           type: 5002,
           name: "belShare",
           location: 'bel_share.belShare'
+      },
+      verifyBelShare: {
+          type: 5004,
+          name: "belShare",
+          location: 'bel_share.verifyBelShare'
       }
   }
   console.log("app: ", app.contract);

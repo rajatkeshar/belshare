@@ -21,6 +21,13 @@ module.exports = {
         length: 256
       },
       {
+        name: 'status',
+        type: 'String',
+        length: 25,
+        default: "pending",
+        enum: ["pending", "verified"]
+      },
+      {
         name: 'countryCode',
         type: 'String',
         length: 2

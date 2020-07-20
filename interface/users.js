@@ -14,6 +14,7 @@ var TransactionTypes = require('../utils/transaction-types.js');
 
 app.route.put('/user',  async function (req) {
     let validateSchema = await z_schema.validate(req.query, schema.registerUsers);
+    req.query.email = (req.query.email)? req.query.email.toLowerCase(): null;
     let countryCode = req.query.countryCode.toUpperCase();
     let wallet = await httpCall.call('GET', `/api/accounts/new?countryCode=` + countryCode);
 
