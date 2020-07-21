@@ -100,7 +100,7 @@ app.route.post('/belshare/user/:userId',  async function (req) {
 app.route.post('/belshare/merchant/:merchantId',  async function (req) {
     let offset =  req.query.offset || 0;
     let limit = req.query.limit || 20;
-    let count = await app.model.BelShare.count({ merchantId: req.params.merchantId });
+    let count = await app.model.BelShare.count({ merchantId: req.params.merchantId, status: "pending" });
     let belShare = await app.model.BelShare.findAll({
         condition: { merchantId: req.params.merchantId, status: "pending"},
         offset: offset,

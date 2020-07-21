@@ -50,17 +50,31 @@ app.route.put('/user',  async function (req) {
     }
 });
 
+app.route.post('/users/login',  async function (req) {
+    let userId =  req.query.userId;
+    let user = await app.model.Users.findOne({ condition: {phoneNo: req.query.userId} });
+    if (!user) return 'userId does not exists';
+
+    let decryptedPassword = aesUtil.decrypt(user.password, constants.cipher.key);
+    if(!_.isEqual(decryptedPassword, req.query.password)) return "incorrect password";
+
+    delete user.password;
+    delete user.secret;
+    return user;
+});
+
 app.route.post('/users/role/:roleType',  async function (req) {
     let offset =  req.query.offset || 0;
     let limit = req.query.limit || 20;
-
+    let count = await app.model.Users.count({ role: req.params.roleType });
     let users = await app.model.Users.findAll({
         offset: offset,
         limit: limit,
         condition: {role: req.params.roleType}
     });
     users = users.map(user => { return _.omit(user, ["secret", "password", "token"])});
-    return users;
+
+    return {users: users, total: count};
 });
 
 app.route.post('/users/auth/forgetPassword',  async function (req) {
