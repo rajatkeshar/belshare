@@ -1,25 +1,17 @@
-var config = require('../../dappsConfig.json');
+const constants = require('./utils/constants.js');
+const TransactionTypes = require('./utils/transaction-types.js');
+
 module.exports = async function () {
   console.log('init belshare dapp')
 
   var contractObjects = {
-      registerUsers: {
-          type: 5001,
-          name: "register users",
-          location: 'users.registerUsers'
-      },
-      confirmPassword: {
-          type: 5003,
-          name: "confirm password",
-          location: 'users.confirmPassword'
-      },
       belShare: {
-          type: 5002,
+          type: TransactionTypes.BEL_SHARE,
           name: "belShare",
           location: 'bel_share.belShare'
       },
       verifyBelShare: {
-          type: 5004,
+          type: TransactionTypes.VERIFY_BEL_SHARE,
           name: "belShare",
           location: 'bel_share.verifyBelShare'
       }
@@ -28,7 +20,7 @@ module.exports = async function () {
   for(i in contractObjects){
       app.registerContract(contractObjects[i].type, contractObjects[i].location);
   }
-  app.setDefaultFee(config.defaultFee, 'BEL');
+  app.setDefaultFee(constants.fees.defaultFee, constants.defaultCurrency);
 
   app.events.on('newBlock', (block) => {
     console.log('new block received', block.height)

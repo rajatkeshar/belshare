@@ -11,8 +11,8 @@ module.exports = {
         }
     },
 
-    generateToken: function(userId) {
-        const token = jwt.sign({"userId": userId}, constants.cipher.key, {
+    generateToken: function(data) {
+        const token = jwt.sign(data, constants.cipher.key, {
             expiresIn: 60 * 60
         });
         return token;

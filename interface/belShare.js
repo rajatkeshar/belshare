@@ -1,12 +1,9 @@
 var _ = require('lodash');
-var crypto = require('crypto');
 var belriumJS = require('belrium-js');
-var assert = require('assert');
-var ed = require('../utils/ed.js');
 var util = require("../utils/util");
 var aesUtil = require("../utils/aesUtil");
-var Address = require('../utils/address.js');
 var httpCall = require('../utils/httpCall.js');
+var apiCall = require('../utils/apiCall.js');
 var constants = require('../utils/constants.js');
 var schema = require('../schema/belShare.js');
 var addressHelper = require('../utils/address.js');
@@ -17,14 +14,17 @@ app.route.put('/belshare',  async function (req) {
     let validateSchema = await z_schema.validate(req.query, schema.belShare);
     let countryCode = req.query.countryCode.toUpperCase();
 
-    let exists = await app.model.Users.exists({phoneNo: req.query.merchantId, role: "merchant"});
-    if (!exists) return 'merchant does not exists';
+    req.query.dappName = app.config.dappName;
+    let userQuery = { phoneNo: req.query.merchantId, dappName: req.query.dappName, role: "merchant" };
+    let merchantInfo = await apiCall.call(constants.CENTRAL_PROFILE_URL, "POST", `/api/dapps/${constants.centralProfileDappId}/users/info`, userQuery);
+    if (merchantInfo.customCode == 4000) return { customCode: 4006, message: 'merchant does not exists' };
 
-    let user = await app.model.Users.findOne({ condition: {phoneNo: req.query.userId} });
-    if (!user) return 'userId does not exists';
+    userQuery = { phoneNo: req.query.userId, dappName: req.query.dappName, role: "user" }
+    let userInfo = await apiCall.call(constants.CENTRAL_PROFILE_URL, "POST", `/api/dapps/${constants.centralProfileDappId}/users/info`, userQuery);
+    if (userInfo.customCode == 4000) return { customCode: 4005, message: 'userId does not exists' };
 
-    let decryptedPassword = aesUtil.decrypt(user.password, constants.cipher.key);
-    if(!_.isEqual(decryptedPassword, req.query.password)) return "incorrect password";
+    let decryptedPassword = aesUtil.decrypt(userInfo.password, constants.cipher.key);
+    if(!_.isEqual(decryptedPassword, req.query.password)) return { customCode: 4007, message: "incorrect password" };
 
     let options = {
         fee: String(constants.fees.belShare * constants.fixedPoint),
@@ -32,9 +32,9 @@ app.route.put('/belshare',  async function (req) {
         args: JSON.stringify([req.query.userId, req.query.merchantId, req.query.desc, req.query.countryCode])
     };
 
-    let decryptedSecret = aesUtil.decrypt(user.secret, constants.cipher.key);
+    let decryptedSecret = aesUtil.decrypt(userInfo.secret, constants.cipher.key);
     let transaction = belriumJS.dapp.createInnerTransaction(options, decryptedSecret);
-    let address =  Address.generateAddressWithCountryCode(Address.generateBase58CheckAddress(transaction.senderPublicKey), countryCode);
+    let address =  addressHelper.generateAddressWithCountryCode(addressHelper.generateBase58CheckAddress(transaction.senderPublicKey), countryCode);
 
     let dappId = util.getDappID();
     let params = {
@@ -46,21 +46,23 @@ app.route.put('/belshare',  async function (req) {
       let res = await httpCall.call('PUT', `/api/dapps/${dappId}/transactions/signed`, params);
       return res;
     } catch (e) {
-      return {"message": "something went wrong!"}
+      return {customCode: 3001, message: "something went wrong!"}
     }
 });
 
 app.route.put('/belshare/verify',  async function (req) {
     let validateSchema = await z_schema.validate(req.query, schema.verifyBelShare);
 
-    let user = await app.model.Users.findOne({ condition: {phoneNo: req.query.phoneNo, role: "merchant"} });
-    if (!user) return 'merchant does not exists';
+    req.query.dappName = app.config.dappName;
+    let userQuery = { phoneNo: req.query.phoneNo, dappName: req.query.dappName, role: "merchant" };
+    let merchantInfo = await apiCall.call(constants.CENTRAL_PROFILE_URL, "POST", `/api/dapps/${constants.centralProfileDappId}/users/info`, userQuery);
+    if (merchantInfo.customCode == 4000) return { customCode: 4006, message: 'merchant does not exists' };
 
     let checkStatus = await app.model.BelShare.findOne({ condition: { transactionId: req.query.transactionId, status: "verified"} });
     if (checkStatus) return 'transaction already verified';
 
-    let decryptedPassword = aesUtil.decrypt(user.password, constants.cipher.key);
-    if(!_.isEqual(decryptedPassword, req.query.password)) return "incorrect password";
+    let decryptedPassword = aesUtil.decrypt(merchantInfo.password, constants.cipher.key);
+    if(!_.isEqual(decryptedPassword, req.query.password)) return { customCode: 4007, message: "incorrect password" };
 
     let options = {
         fee: String(constants.fees.belShare * constants.fixedPoint),
@@ -68,7 +70,7 @@ app.route.put('/belshare/verify',  async function (req) {
         args: JSON.stringify([req.query.transactionId])
     };
 
-    let decryptedSecret = aesUtil.decrypt(user.secret, constants.cipher.key);
+    let decryptedSecret = aesUtil.decrypt(merchantInfo.secret, constants.cipher.key);
     let transaction = belriumJS.dapp.createInnerTransaction(options, decryptedSecret);
     let dappId = util.getDappID();
     let params = {
@@ -80,7 +82,7 @@ app.route.put('/belshare/verify',  async function (req) {
       let res = await httpCall.call('PUT', `/api/dapps/${dappId}/transactions/signed`, params);
       return res;
     } catch (e) {
-      return {"message": "something went wrong!"}
+      return {customCode: 3001, message: "something went wrong!"}
     }
 });
 
