@@ -59,7 +59,7 @@ app.route.put('/belshare/verify',  async function (req) {
     if (merchantInfo.customCode == 4000) return { customCode: 4006, message: 'merchant does not exists' };
 
     let checkStatus = await app.model.BelShare.findOne({ condition: { transactionId: req.query.transactionId, status: "verified"} });
-    if (checkStatus) return 'transaction already verified';
+    if (checkStatus) return {customCode: 2002, message: 'transaction already verified' };
 
     let decryptedPassword = aesUtil.decrypt(merchantInfo.password, constants.cipher.key);
     if(!_.isEqual(decryptedPassword, req.query.password)) return { customCode: 4007, message: "incorrect password" };
