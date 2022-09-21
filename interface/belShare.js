@@ -29,12 +29,12 @@ app.route.put('/belshare',  async function (req) {
     let options = {
         fee: String(constants.fees.belShare * constants.fixedPoint),
         type: TransactionTypes.BEL_SHARE,
-        args: JSON.stringify([req.query.userId, req.query.merchantId, req.query.desc, req.query.countryCode])
+        args: JSON.stringify([req.query.userId, req.query.merchantId, req.query.desc, countryCode])
     };
 
     let decryptedSecret = aesUtil.decrypt(userInfo.secret, constants.cipher.key);
     let transaction = belriumJS.dapp.createInnerTransaction(options, decryptedSecret);
-    let address =  addressHelper.generateAddressWithCountryCode(addressHelper.generateBase58CheckAddress(transaction.senderPublicKey), countryCode);
+    //let address =  addressHelper.generateAddressWithCountryCode(addressHelper.generateBase58CheckAddress(transaction.senderPublicKey), countryCode);
 
     let dappId = util.getDappID();
     let params = {
