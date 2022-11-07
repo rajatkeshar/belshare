@@ -13,13 +13,17 @@ var TransactionTypes = require('../utils/transaction-types.js');
 app.route.put('/belshare',  async function (req) {
     let validateSchema = await z_schema.validate(req.query, schema.belShare);
     let countryCode = req.query.countryCode.toUpperCase();
-
     req.query.dappName = app.config.dappName;
-    let userQuery = { phoneNo: req.query.merchantId, dappName: req.query.dappName, role: "merchant" };
-    let merchantInfo = await apiCall.call(constants.CENTRAL_PROFILE_URL, "POST", `/api/dapps/${constants.centralProfileDappId}/users/info`, userQuery);
+
+    let merchantQuery = { phoneNo: req.query.merchantId, dappName: req.query.dappName, role: "merchant" };
+    if(req.query.merchantEmailId) { merchantQuery.email = req.query.merchantEmailId}
+
+    let merchantInfo = await apiCall.call(constants.CENTRAL_PROFILE_URL, "POST", `/api/dapps/${constants.centralProfileDappId}/users/info`, merchantQuery);
     if (merchantInfo.customCode == 4000) return { customCode: 4006, message: 'merchant does not exists' };
 
-    userQuery = { phoneNo: req.query.userId, dappName: req.query.dappName, role: "user" }
+    let userQuery = { phoneNo: req.query.userId, dappName: req.query.dappName, role: "user" };
+    if(req.query.userEmailId) { userQuery.email = req.query.userEmailId }
+
     let userInfo = await apiCall.call(constants.CENTRAL_PROFILE_URL, "POST", `/api/dapps/${constants.centralProfileDappId}/users/info`, userQuery);
     if (userInfo.customCode == 4000) return { customCode: 4005, message: 'userId does not exists' };
 
@@ -55,6 +59,8 @@ app.route.put('/belshare/verify',  async function (req) {
 
     req.query.dappName = app.config.dappName;
     let userQuery = { phoneNo: req.query.phoneNo, dappName: req.query.dappName, role: "merchant" };
+    if(req.query.email) {userQuery.email = req.query.email }
+    
     let merchantInfo = await apiCall.call(constants.CENTRAL_PROFILE_URL, "POST", `/api/dapps/${constants.centralProfileDappId}/users/info`, userQuery);
     if (merchantInfo.customCode == 4000) return { customCode: 4006, message: 'merchant does not exists' };
 
